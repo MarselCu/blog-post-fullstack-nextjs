@@ -30,38 +30,67 @@ export async function GET(request, { params }) {
 }
 
 // delete blog by id
-export async function DELETE(request) {
+export async function DELETE(request, { params }) {
   const { id } = params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return NextResponse.json({ error: "Invalid post ID" }, { status: 400 });
+  }
+
   await connectDB();
+
   try {
     const deletedPost = await Post.findByIdAndDelete(id);
+
+    // If post is not found, return 404
     if (!deletedPost) {
-      return new NextResponse(JSON.stringify({ message: "blog not found" }), {
-        status: 404,
-      });
+      return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
-    return new NextResponse(
-      JSON.stringify({ message: "Post deleted successfully!" }),
-      {
-        status: 200,
-      }
+
+    return NextResponse.json(
+      { message: "Post deleted successfully!", post: deletedPost },
+      { status: 200 }
     );
-  } catch (err) {
-    return new NextResponse(JSON.stringify({ message: err.message }), {
-      status: 500,
-    });
+  } catch (error) {
+    console.error("Error deleting post:", error);
+    return NextResponse.json(
+      { error: "Internal Server Error", details: error.message },
+      { status: 500 }
+    );
   }
 }
 
 // update blog by id
-export async function PATCH(request) {
+export async function PATCH(request, { params }) {
+  await connectDB();
+  const { id } = params;
+  const data = await request.json();
+
+  // Validate MongoDB ObjectId
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return NextResponse.json({ error: "Invalid post ID" }, { status: 400 });
+  }
+
   try {
-    return new NextResponse(JSON.stringify({ message: "update blog by id" }), {
-      status: 200,
+    const updatedPost = await Post.findByIdAndUpdate(id, data, {
+      new: true, // Return updated document
+      runValidators: true, // Ensure validation rules are applied
     });
-  } catch (err) {
-    return new NextResponse(JSON.stringify({ message: err.message }), {
-      status: 500,
-    });
+
+    // If post is not found, return 404
+    if (!updatedPost) {
+      return NextResponse.json({ error: "Post not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(
+      { message: "Post updated successfully", post: updatedPost },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error updating post:", error);
+    return NextResponse.json(
+      { error: "Internal Server Error", details: error.message },
+      { status: 500 }
+    );
   }
 }
