@@ -1,35 +1,14 @@
-import React from "react";
+"use client";
 
-const Post = async () => {
-  const res = await fetch("http://localhost:3000/api/posts");
-  const data = await res.json();
-  
-  console.log(data); // Debugging: Check the API response structure
-  
-  const posts = data?.post || []; // Ensure `posts` is an array
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold text-center mb-6">All Posts</h1>
+export default function Home() {
+  const router = useRouter();
 
-      {/* Grid 2 columns */}
-      <div className="grid md:grid-cols-2 gap-6">
-        {posts.length > 0 ? (
-          posts.map((post) => (
-            <div key={post._id} className="bg-white shadow-md rounded-lg p-5 border">
-              <h2 className="text-xl font-semibold">{post.title}</h2>
-              <p className="text-gray-600 mt-2">{post.description}</p>
-              <a href={`/posts/${post.slug}`} className="text-blue-600 font-semibold mt-4 inline-block">
-                Read More →
-              </a>
-            </div>
-          ))
-        ) : (
-          <p className="text-center text-gray-500">No posts available.</p>
-        )}
-      </div>
-    </div>
-  );
-};
+  useEffect(() => {
+    router.push("/post");
+  }, [router]); // Run only once when the component mounts
 
-export default Post;
+  return null; // Don't render anything while redirecting
+}

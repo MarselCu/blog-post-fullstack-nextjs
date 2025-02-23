@@ -14,7 +14,7 @@ const Navbar = () => {
         <Link href="/" className="flex items-center gap-2 text-gray-700 hover:text-black">
           <Home size={20} /> Home
         </Link>
-        <Link href="/add-post" className="flex items-center gap-2 text-gray-700 hover:text-black">
+        <Link href="/post/create" className="flex items-center gap-2 text-gray-700 hover:text-black">
           <PlusCircle size={20} /> Add Post
         </Link>
       </div>
