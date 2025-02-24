@@ -61,7 +61,7 @@ export async function DELETE(request, { params }) {
 }
 
 // update blog by id
-export async function PATCH(request, { params }) {
+export async function PUT(request, { params }) {
   await connectDB();
   const { id } = params;
   const data = await request.json();

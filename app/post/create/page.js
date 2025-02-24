@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter, useParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 
@@ -25,66 +25,43 @@ const PostSchema = Yup.object().shape({
   published: Yup.boolean(),
 });
 
-export default function PostEdit() {
+export default function PostCreate() {
   const router = useRouter();
-  const { id } = useParams();
-  const [post, setPost] = useState(null);
   const [tagsInput, setTagsInput] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    const fetchPost = async () => {
-      try {
-        const res = await fetch(`http://localhost:3000/api/posts/${id}`);
-        if (!res.ok) throw new Error("Post not found.");
-        const { post } = await res.json();
-        setPost(post);
-        setTagsInput(post.tags.join(", "));
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (id) fetchPost();
-  }, [id]);
-
-  if (loading) return <div className="text-center mt-10">Loading...</div>;
-  if (error) return <div className="text-center mt-10 text-red-600">{error}</div>;
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold text-center mb-6">Edit Post</h1>
+      <h1 className="text-2xl font-bold text-center mb-6">Create New Post</h1>
 
       <Formik
         initialValues={{
-          title: post.title,
-          description: post.description,
-          content: post.content,
-          tags: post.tags,
-          published: post.published,
+          title: "",
+          description: "",
+          content: "",
+          tags: [],
+          published: false,
         }}
         validationSchema={PostSchema}
         onSubmit={async (values, { setSubmitting }) => {
           try {
             const formattedValues = {
               ...values,
-              tags: tagsInput.split(",").map((tag) => tag.trim()),
+              tags: tagsInput
+                ? tagsInput.split(",").map((tag) => tag.trim())
+                : [],
             };
 
-            const response = await fetch(`http://localhost:3000/api/posts/${id}`, {
-              method: "PUT",
+            const response = await fetch("http://localhost:3000/api/posts", {
+              method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(formattedValues),
             });
 
-            if (!response.ok) throw new Error("Gagal mengupdate post");
+            if (!response.ok) throw new Error("Gagal membuat post");
 
             router.push("/post");
           } catch (error) {
-            console.error("Error updating post:", error);
+            console.error("Error creating post:", error);
           } finally {
             setSubmitting(false);
           }
@@ -95,19 +72,39 @@ export default function PostEdit() {
             <div>
               <label>Title</label>
               <Field type="text" name="title" className="border p-2 w-full" />
-              <ErrorMessage name="title" component="div" className="text-red-500" />
+              <ErrorMessage
+                name="title"
+                component="div"
+                className="text-red-500"
+              />
             </div>
 
             <div className="mt-4">
               <label>Description</label>
-              <Field type="text" name="description" className="border p-2 w-full" />
-              <ErrorMessage name="description" component="div" className="text-red-500" />
+              <Field
+                type="text"
+                name="description"
+                className="border p-2 w-full"
+              />
+              <ErrorMessage
+                name="description"
+                component="div"
+                className="text-red-500"
+              />
             </div>
 
             <div className="mt-4">
               <label>Content</label>
-              <Field as="textarea" name="content" className="border p-2 w-full h-32" />
-              <ErrorMessage name="content" component="div" className="text-red-500" />
+              <Field
+                as="textarea"
+                name="content"
+                className="border p-2 w-full h-32"
+              />
+              <ErrorMessage
+                name="content"
+                component="div"
+                className="text-red-500"
+              />
             </div>
 
             <div className="mt-4">
@@ -117,12 +114,19 @@ export default function PostEdit() {
                 value={tagsInput}
                 onChange={(e) => {
                   setTagsInput(e.target.value);
-                  setFieldValue("tags", e.target.value.split(",").map((tag) => tag.trim()));
+                  setFieldValue(
+                    "tags",
+                    e.target.value.split(",").map((tag) => tag.trim())
+                  );
                 }}
                 className="border p-2 w-full"
                 placeholder="Enter tags separated by commas"
               />
-              <ErrorMessage name="tags" component="div" className="text-red-500" />
+              <ErrorMessage
+                name="tags"
+                component="div"
+                className="text-red-500"
+              />
             </div>
 
             <div className="mt-4 flex items-center">
@@ -135,7 +139,7 @@ export default function PostEdit() {
               disabled={isSubmitting}
               className="mt-6 bg-blue-500 text-white px-4 py-2 rounded w-full"
             >
-              {isSubmitting ? "Updating..." : "Update Post"}
+              {isSubmitting ? "Submitting..." : "Create Post"}
             </button>
           </Form>
         )}
